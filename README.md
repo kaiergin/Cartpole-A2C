@@ -1,2 +1,2 @@
 # Cartpole A2C
-A simple implementation A2C solving cartpole
+A simple implementation of A2C and PPO solving cartpole
