@@ -20,22 +20,22 @@ env = gym.make('CartPole-v0')
 # Takes in state, output action
 def create_model_actor():
     model = models.Sequential()
-    model.add(layers.Dense(200, activation='relu', input_shape=(4,)))
+    model.add(layers.Dense(200, activation='relu', input_shape=(OBS_SPACE,)))
     model.add(layers.Dense(2, activation='softmax'))
     return model
 
-# Takes in state action pair, output estimated reward
+# Takes in state, output estimated reward
 def create_model_critic():
     model = models.Sequential()
-    model.add(layers.Dense(200, input_shape=(6,)))
+    model.add(layers.Dense(200, input_shape=(OBS_SPACE,)))
     model.add(layers.Dense(1))
     return model
 
 def eval_actor(actor, obs):
     return np.random.choice(2, p=np.squeeze(actor(np.expand_dims(obs,0))))
 
-def eval_critic(critic, obs, move):
-    return tf.cast(critic(tf.concat((obs, move), 1)), tf.float64)
+def eval_critic(critic, obs):
+    return tf.cast(critic(obs), tf.float64)
 
 def fill_qvals(rewards, qvals):
     future = 0
@@ -51,7 +51,7 @@ def learn(actor, actor_old, critic, obs, move, qval):
         prob_old = tf.cast(tf.boolean_mask(actor_old(obs), move), tf.float64)
         div = prob / prob_old
         clipped = tf.clip_by_value(div, 1.0 - EPSILON, 1.0 + EPSILON)
-        V = eval_critic(critic, obs, move)
+        V = eval_critic(critic, obs)
         advantage = qval - V
         critic_loss = tf.math.square(advantage)
         actor_loss = -1 * tf.math.minimum(advantage*clipped, advantage*div)
